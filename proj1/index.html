@@ -1,0 +1,619 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>180 Project 1</title>
+    <style>
+        /* Reset some default styles for better consistency */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+    
+        h2 {
+            text-align: center;
+            font-size: 30px;
+            margin-bottom: 24px;
+            color: #4A90E2;
+        }
+    
+        h3 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #4A90E2;
+        }
+
+        ol {
+            color: #555
+        }
+    
+        /* General styles */
+        body {
+            font-family: "Roboto", sans-serif;
+            background-color: #EDEDED; /* Light gray background */
+            color: #eee;
+        }
+    
+        /* Header styles */
+        header {
+            text-align: center;
+            background-color: #2ECC71; /* Green header background */
+            color: #fff;
+            padding: 24px 0;
+            position: relative;
+        }
+    
+        header h1 {
+            font-size: 42px;
+            margin-bottom: 16px;
+            padding: 16px; /* Add padding to center and space h1 */
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+    
+        header p {
+            font-size: 20px;
+            margin-top: 16px;
+        }
+    
+        /* Navigation styles (customize as needed) */
+        nav {
+            text-align: center;
+            background-color: #eee;
+            color: #fff;
+            padding: 12px 0;
+        }
+    
+        /* Main content styles */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+    
+        /* Text Overview Section styles */
+        .text-overview {
+            text-align: center;
+            padding: 24px;
+            background-color: #F9F9F9; /* Light gray text background */
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            margin-bottom: 20px; /* Add margin to create separation */
+        }
+    
+        .text-overview h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #4A90E2;
+        }
+    
+        .text-overview p {
+            font-size: 20px;
+            margin: 16px 0;
+            color: #666;
+            text-align: left;
+        }
+    
+        /* Image section styles */
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+    
+        .image-item {
+            width: calc(25% - 20px);
+            margin-right: 20px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            background-color: #F9F9F9; /* Light gray image background */
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .image-item2 {
+            width: calc(33% - 20px);
+            margin-right: 20px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            background-color: #F9F9F9; /* Light gray image background */
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            transition: transform 0.3s ease-in-out;
+        }
+    
+        .image-item:hover {
+            transform: scale(1.05);
+        }
+    
+        .image-item img {
+            max-width: 100%;
+            height: auto;
+        }
+    
+        .image-item p {
+            text-align: center;
+            font-size: 18px;
+            margin: 16px 0;
+            color: #555;
+        }
+    
+        /* Footer styles */
+        footer {
+            text-align: center;
+            padding: 24px;
+            background-color: #eee;
+            color: #aaa;
+        }
+    
+        .footer p {
+            font-size: 16px;
+        }
+    </style>
+    
+</head>
+<body>
+    <header>
+        <h1>
+            Russian Empire Images: <br>
+            Colorizing the Prokudin-Gorskii photo collection
+        </h1>
+    </header>
+    
+    <main>
+
+        <section class="text-overview">
+            <h2>Overview</h2>
+            <p>In this particular project, our task involved colorizing the images found within the Prokudin-Gorskii photo collection by meticulously aligning their distinct channels.
+            </p>
+
+            <h2> Method </h2>
+            <p> Initially, I experimented with exhaustive search employing the L2 loss function for error comparison. However, this became really expensive when trying to compare across higher ranges. Hence, I employed the concept of Gaussian Pyramids to perform image alignment. In essence, I iteratively applied a Gaussian kernel to progressively blur the image, reducing it to half of its size at each step. This process continued until the image became sufficiently small. Subsequently, an exhaustive search for offsets was conducted on this small, blurred image. Once the offset was determined, it was doubled, and a search was conducted in the vicinity of these values within the less blurred image (or the image at the higher level). Finally, at the original image resolution level, we obtained our desired offsets.
+            </p>
+
+            <h2> Results </h2>
+            <p> With the small images this worked fine, but with some of the bigger images, the results were not good. The larger images did not have their R, G, B frames aligned as required. This made me evaluate my choices and ideate new ways to overcome this problem.</p>
+
+            <h2> Bells and Whistles </h2>
+            <h3>Edge Detection</h3>
+            <p> To combat the issue, I did some experimentation and came to the conclusion that running an edge detection algorithm on the R, G, B frames and then running the gaussian pyramids on those filtered images would yield a much more accurate alignment.
+                <br> 
+                <br>
+                I utilised the Canny Edge detection algorithm, a multi-state algorithm to detect a wide range of edges in images, extracting useful structural information and dramatically reducing the amount of data to be processed. Tuning the aperture size as well as the lower and upper threshold values, I adapted to the frames provided and generated edge detections that worked well with the gaussian pyramid process that followed. Once the edges were detected, I ran the gaussian pyramid algorithm at depth = 5 to assimilate the frames together.  
+                This produced much better results.
+                <br>
+                <br>
+                This produced great results. However, as there was still room for improvement, I considered further improvements.  
+                <br>
+
+                <h2>Image Enhancement</h2>
+<p>While aligning the images and running edge detection played a crucial role in reconstructing the colorized images, they were only a part of the overall workflow. The final images, though aligned perfectly, sometimes lacked the vibrancy and sharpness that was anticipated. Hence, to enhance the visual quality of the resultant images, two main post-processing techniques were employed: Automatic Contrasting and Automatic White Balance.</p>
+
+<h3>Automatic Contrasting</h3>
+<p>To amplify the details and accentuate the features in the images, I implemented automatic contrasting. The aim was to stretch the intensity values of the image. The logic behind this was simple: set the darkest pixel's intensity to zero and the brightest to one, ensuring that we covered the entire intensity spectrum. This would mean the contrast of the image was maximized. The intensity rescaling worked by identifying the minimum and maximum pixel intensities and linearly mapping these to the desired range, thus effectively improving the perceived image quality. By deploying this technique, the images displayed greater depth, and details which were previously subtle became significantly more prominent.</p>
+
+<h3>Automatic White Balance</h3>
+<p>Another noticeable anomaly in some images was the presence of color tints, often indicative of the illumination conditions at the time of capturing. To counter this, an automatic white balance algorithm was developed. The procedure involved two primary steps:</p>
+<ol>
+    <li>Estimating the Illuminant: The challenge here was to correctly identify the source of light that might be skewing the color balance of the image. A straightforward approach was to consider either the average color or the brightest color in the image as the representative of the illuminant.</li>
+    <li>Manipulating Colors: Once the illuminant was determined, the colors in the image were manipulated to counteract this illuminant, attempting to simulate an image taken under a neutral light source. The idea was to shift the detected illuminant color towards gray or white, thereby neutralizing any color biases.</li>
+</ol>
+<p>Upon applying the automatic white balance, the images displayed colors that were more true-to-life and devoid of unnatural tints. The results were visually more pleasing and closer to what the human eye would perceive in a neutral lighting condition.</p>
+
+<h2>Final Thoughts</h2>
+<p>With these improvements, the colorized images from the Prokudin-Gorskii collection not only aligned seamlessly but also exhibited enhanced visual aesthetics, making them comparable to modern day color photographs. The journey from extracting individual R, G, B frames to implementing the Gaussian pyramid alignment, and then further refining with automatic contrasting and white balancing was a testament to the intricate yet rewarding nature of image processing.</p>
+        </section>
+
+        <h2> Small Images </h2>
+
+        <section class="text-overview">
+            <h3> Monastery </h3>
+            <p> Offset for green: [(-344, 2)], Offset for red: [(-336, 2)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/monastery.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/monastery.jpg" alt="Image 1"> 
+                    <p> Gaussian pyramiding on edges + stacking frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/monastery.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/monastery.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="text-overview">
+            <h3> Cathedral </h3>
+            <p> Offset for green: [(-334, -388)], Offset for red: [(-320, -344)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/cathedral.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/cathedral.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/cathedral.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/cathedral.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+
+
+
+        <section class="text-overview">
+            <h3> Tobolsk </h3>
+            <p> Offset for green: [(-338, 2)], Offset for red: [(-334, 2)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/tobolsk.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/tobolsk.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/tobolsk.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/tobolsk.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+
+        <h2> Large Images </h2>
+
+        <section class="text-overview">
+            <h3> Emir </h3>
+            <p> Offset for green: [(50, 22)], Offset for red: [(106, 40)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/emir.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/AnyConv.com__emir.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/emir.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/emir.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+
+        
+        <section class="text-overview">
+            <h3> Church </h3>
+            <p> Offset for green: [(-20, 396)], Offset for red: [(44, 320)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/church.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/AnyConv.com__church.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/church.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/church.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="text-overview">
+            <h3> Three Generations </h3>
+            <p> Offset for green: [(54, 10)], Offset for red: [(110, 8)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/three_generations.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/AnyConv.com__three_generations.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/three_generations.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/three_generations.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+        
+        
+
+
+        <section class="text-overview">
+            <h3> Melons </h3>
+            <p> Offset for green: [(84, 10)], Offset for red: [(178, 12)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/melons.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/AnyConv.com__melons.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/melons.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/melons.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="text-overview">
+            <h3> Onion Church </h3>
+            <p> Offset for green: [(52, 26)], Offset for red: [(108, 36)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/onion_church.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/AnyConv.com__onion_church.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/onion_church.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/onion_church.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="text-overview">
+            <h3> Train </h3>
+            <p> Offset for green: [(44, 2)], Offset for red: [(86, 30)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/train.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/AnyConv.com__train.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/train.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/train.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+
+
+       
+        
+        <section class="text-overview">
+            <h3> Icon </h3>
+            <p> Offset for green: [(40, 18)], Offset for red: [(90, 24)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/icon.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/AnyConv.com__icon.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/icon.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/icon.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+        
+        <section class="text-overview">
+            <h3> Self Portrait </h3>
+            <p> Offset for green: [(78, 28)], Offset for red: [(174, 36)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/self_portrait.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/AnyConv.com__self_portrait.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/self_portrait.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/self_portrait.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="text-overview">
+            <h3> Harvesters </h3>
+            <p> Offset for green: [(60, 14)], Offset for red: [(122, 12)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/harvesters.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/AnyConv.com__harvesters.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/harvesters.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/harvesters.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="text-overview">
+            <h3> Sculpture </h3>
+            <p> Offset for green: [(32, -10)], Offset for red: [(140, -26)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/sculpture.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/AnyConv.com__sculpture.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/sculpture.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/sculpture.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="text-overview">
+            <h3> Lady </h3>
+            <p> Offset for green: [(56, 8)], Offset for red: [(96, -18)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/lady.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="edgedataout/AnyConv.com__lady.jpg" alt="Image 1"> 
+                    <p>The edge detection algorithm + gaussian pyramiding + stacking</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/lady.jpg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/lady.jpg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+        
+
+
+
+        <h2>New Pictures</h2>
+        <section class="text-overview">
+            <h3> Boy in court </h3>
+            <p> Offset for green: [(56, 8)], Offset for red: [(96, -18)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/inthecourt.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/inthecourt.jpeg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/inthecourt.jpeg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="text-overview">
+            <h3> Grassy field </h3>
+            <p> Offset for green: [(56, 8)], Offset for red: [(96, -18)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/grassyfield.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/grassyfield.jpeg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/grassyfield.jpeg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="text-overview">
+            <h3> Pink flowers </h3>
+            <p> Offset for green: [(56, 8)], Offset for red: [(96, -18)]</p>
+            <div class="image-container">
+                <div class="image-item">
+                    <img src="edges/pinkflowers.jpg" alt="Image 4">
+                    <p>Edge detection algorithm on R, G, B frames</p>
+                </div>
+                <div class="image-item">
+                    <img src="filtered/pinkflowers.jpeg" alt="Image 2"> 
+                    <p>Adding automatic contrast and white balance to the images </p>
+                </div>
+                <div class="image-item">
+                    <img src="finalEdgePics/pinkflowers.jpeg" alt="Image 3">
+                    <p>Combining all optimisations and improvements to develop our RGB image</p>
+                </div>
+            </div>
+        </section>
+
+
+
+
+
+    </main>
+    
+</body>
+</html>
